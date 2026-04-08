@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Painel de Objetivos 2025</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a0a0f; color: #e2e0d8; font-family: Georgia, serif; min-height: 100vh; }
+
+.tabs { display: flex; background: #0f0d1a; border-bottom: 1px solid #2a2040; position: sticky; top: 0; z-index: 50; }
+.tab { flex: 1; padding: 14px; text-align: center; font-size: 13px; cursor: pointer; color: #6b6080; border-bottom: 2px solid transparent; }
+.tab.active { color: #c4b8e0; border-bottom-color: #7c6fa0; }
+
+.header { background: linear-gradient(135deg,#0f0f1a,#1a1025); border-bottom: 1px solid #2a2040; padding: 22px 16px 16px; }
+.hlbl { color: #7c6fa0; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 6px; }
+.header h1 { font-size: 20px; font-weight: 400; color: #f0edf8; margin-bottom: 14px; }
+.stats { display: flex; gap: 8px; flex-wrap: wrap; }
+.sc { background: #13111f; border: 1px solid #2a2040; border-radius: 8px; padding: 8px 12px; min-width: 66px; }
+.sv { font-size: 19px; font-weight: 700; }
+.sl { font-size: 9px; color: #6b6080; letter-spacing: 1px; text-transform: uppercase; }
+
+.controls { max-width: 900px; margin: 0 auto; padding: 12px 16px 0; }
+.fg { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.fl { font-size: 10px; color: #6b6080; letter-spacing: 2px; text-transform: uppercase; margin-right: 2px; flex-shrink:0; }
+.fb { padding: 5px 11px; border-radius: 20px; border: 1px solid #2a2040; background: transparent; color: #6b6080; font-size: 11px; cursor: pointer; font-family: Georgia,serif; }
+.fb.act-all { border-color:#7c6fa0; background:#1e1630; color:#c4b8e0; }
+.fb.act-done { border-color:#22c55e; background:#052e16; color:#22c55e; }
+.fb.act-running { border-color:#f59e0b; background:#1c1208; color:#f59e0b; }
+.fb.act-late { border-color:#ef4444; background:#1f0707; color:#ef4444; }
+.fb.act-pessoal { border-color:#7c9fa0; background:#071416; color:#7c9fa0; }
+.fb.act-profissional { border-color:#9f7ca0; background:#140714; color:#9f7ca0; }
+.add-btns { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+.abp  { padding:8px 14px; border-radius:8px; border:1px solid #1a3538; background:#071416; color:#7c9fa0; font-size:12px; cursor:pointer; font-family:Georgia,serif; }
+.abpr { padding:8px 14px; border-radius:8px; border:1px solid #35183a; background:#140714; color:#9f7ca0; font-size:12px; cursor:pointer; font-family:Georgia,serif; }
+
+.list { max-width:900px; margin:0 auto; padding:12px 16px 60px; }
+.obj-card { background:#0f0d1a; border:1px solid #1e1c2e; border-radius:10px; margin-bottom:8px; overflow:hidden; }
+.obj-card.open { border-color:#2a2040; }
+.obj-hdr { padding:13px 14px; display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; }
+.sdot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.ab { font-size:8px; letter-spacing:2px; text-transform:uppercase; padding:2px 7px; border-radius:10px; flex-shrink:0; }
+.ab-p  { color:#7c9fa0; background:#071416; border:1px solid #1a3538; }
+.ab-pr { color:#9f7ca0; background:#140714; border:1px solid #35183a; }
+.onum { font-size:10px; color:#6b6080; flex-shrink:0; }
+.otitle { font-size:13px; color:#d4cfe8; flex:1; line-height:1.4; }
+.oright { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.pbar { width:46px; height:4px; background:#1e1c2e; border-radius:2px; overflow:hidden; }
+.pfill { height:100%; border-radius:2px; }
+.ppct { font-size:10px; min-width:26px; text-align:right; }
+.icon-btn { background:none; border:none; color:#3a2a2a; cursor:pointer; font-size:13px; padding:2px 4px; line-height:1; }
+.icon-btn:hover { color:#ef4444; }
+.chevron { color:#4a4060; font-size:11px; }
+.acts-wrap { border-top:1px solid #1e1c2e; }
+.arow { padding:10px 14px 10px 32px; display:flex; align-items:flex-start; gap:10px; border-bottom:1px solid #141220; }
+.arow:last-child { border-bottom:none; }
+.arow.late-bg { background:#0f0608; }
+.chk { width:16px; height:16px; min-width:16px; border-radius:4px; border:1.5px solid #2a2040; background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:10px; color:#22c55e; margin-top:2px; }
+.chk.chkd { border-color:#22c55e; background:#052e16; }
+.ainfo { flex:1; min-width:0; }
+.atxt { font-size:12px; color:#c0bcd4; line-height:1.4; }
+.atxt.done { color:#4a4060; text-decoration:line-through; }
+.anote { font-size:11px; color:#6b6080; margin-top:3px; font-style:italic; line-height:1.4; }
+.ameta { display:flex; align-items:center; gap:6px; margin-top:4px; flex-wrap:wrap; }
+.dbadge { font-size:10px; padding:2px 8px; border-radius:10px; }
+.sbadge { font-size:9px; letter-spacing:1px; text-transform:uppercase; }
+.abtns { display:flex; gap:2px; flex-shrink:0; margin-top:1px; }
+.add-arow { padding:10px 14px 10px 32px; }
+.add-abtn { background:none; border:1px dashed #2a2040; border-radius:6px; color:#4a4060; cursor:pointer; font-size:11px; padding:6px 14px; font-family:Georgia,serif; }
+.add-abtn:hover { color:#7c6fa0; border-color:#7c6fa0; }
+.empty { text-align:center; color:#4a4060; padding:48px 0; font-size:13px; }
+
+/* WEEKLY */
+.week-header { background: linear-gradient(135deg,#0f0f1a,#1a1025); border-bottom: 1px solid #2a2040; padding: 18px 16px 14px; }
+.week-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.week-nav-btn { background:#13111f; border:1px solid #2a2040; border-radius:8px; color:#7c6fa0; font-size:16px; cursor:pointer; padding:6px 14px; font-family:Georgia,serif; }
+.week-nav-btn:hover { border-color:#7c6fa0; color:#c4b8e0; }
+.week-nav-center { text-align:center; }
+.week-title { font-size:16px; font-weight:400; color:#f0edf8; }
+.week-range { font-size:11px; color:#7c6fa0; margin-top:2px; }
+.week-badge { display:inline-block; font-size:9px; padding:2px 8px; border-radius:10px; margin-top:4px; letter-spacing:1px; text-transform:uppercase; }
+.badge-current { color:#22c55e; background:#052e16; border:1px solid #22c55e33; }
+.badge-future  { color:#7c6fa0; background:#1e1630; border:1px solid #7c6fa033; }
+.badge-past    { color:#4a4060; background:#111; border:1px solid #2a204033; }
+.week-pbar { height:5px; background:#1e1c2e; border-radius:3px; overflow:hidden; margin-top:10px; }
+.week-pfill { height:100%; background:linear-gradient(90deg,#7c6fa0,#22c55e); border-radius:3px; transition:width .4s; }
+.week-stats { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+
+.week-body { max-width:900px; margin:0 auto; padding:12px 16px 80px; }
+.transfer-bar { background:#0f0d1a; border:1px solid #2a2040; border-radius:10px; padding:12px 16px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.transfer-info { font-size:12px; color:#6b6080; }
+.transfer-btn { padding:8px 16px; border-radius:8px; border:1px solid #35183a; background:#140714; color:#9f7ca0; font-size:12px; cursor:pointer; font-family:Georgia,serif; white-space:nowrap; }
+.transfer-btn:hover { border-color:#9f7ca0; color:#c4b8e0; }
+
+.week-day { margin-bottom:14px; }
+.wday-hdr { display:flex; align-items:center; gap:8px; margin-bottom:7px; cursor:pointer; user-select:none; }
+.wday-name { font-size:11px; letter-spacing:3px; text-transform:uppercase; }
+.wday-date { font-size:10px; color:#4a4060; }
+.wday-count { font-size:10px; color:#4a4060; }
+.wday-line { flex:1; height:1px; background:#1e1c2e; }
+.wday-chev { font-size:10px; color:#4a4060; }
+
+.wact { background:#0f0d1a; border:1px solid #1e1c2e; border-radius:8px; margin-bottom:5px; padding:11px 12px; display:flex; align-items:flex-start; gap:10px; }
+.wact.done-card { opacity:.55; }
+.wchk { width:18px; height:18px; min-width:18px; border-radius:5px; border:1.5px solid #2a2040; background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:11px; color:#22c55e; margin-top:1px; }
+.wchk.chkd { border-color:#22c55e; background:#052e16; }
+.winfo { flex:1; min-width:0; }
+.wtxt { font-size:13px; color:#d4cfe8; line-height:1.4; }
+.wtxt.done { color:#4a4060; text-decoration:line-through; }
+.wnote { font-size:11px; color:#6b6080; margin-top:3px; font-style:italic; }
+.wmeta { display:flex; gap:6px; margin-top:5px; flex-wrap:wrap; align-items:center; }
+.wpri { font-size:9px; padding:2px 8px; border-radius:10px; letter-spacing:1px; text-transform:uppercase; }
+.pri-alta  { color:#ef4444; background:#1f0707; border:1px solid #ef444433; }
+.pri-media { color:#f59e0b; background:#1c1208; border:1px solid #f59e0b33; }
+.pri-baixa { color:#22c55e; background:#052e16; border:1px solid #22c55e33; }
+.wsrc { font-size:10px; color:#4a4060; font-style:italic; }
+.wabtns { display:flex; gap:2px; flex-shrink:0; }
+
+.wadd-row { display:flex; gap:8px; margin-top:4px; }
+.wadd-btn { flex:1; padding:9px; border-radius:8px; border:1px dashed #2a2040; background:transparent; color:#4a4060; font-size:12px; cursor:pointer; font-family:Georgia,serif; }
+.wadd-btn:hover { color:#7c6fa0; border-color:#7c6fa0; }
+.wadd-macro { border-color:#35183a; color:#9f7ca0; }
+.wadd-macro:hover { border-color:#9f7ca0; color:#c4b8e0; }
+
+/* MODAL */
+.moverlay { position:fixed; inset:0; background:#000000bb; z-index:100; display:flex; align-items:center; justify-content:center; padding:16px; }
+.mbox { background:#13111f; border:1px solid #2a2040; border-radius:12px; padding:22px; max-width:440px; width:100%; max-height:88vh; overflow-y:auto; }
+.mhdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+.mtitle { color:#d4cfe8; font-size:15px; font-weight:400; }
+.mclose { background:none; border:none; color:#6b6080; cursor:pointer; font-size:18px; line-height:1; }
+.minput { width:100%; padding:9px 12px; border-radius:8px; border:1px solid #2a2040; background:#0a0814; color:#d4cfe8; font-size:13px; font-family:Georgia,serif; outline:none; margin-bottom:10px; }
+.minput:focus { border-color:#7c6fa0; }
+.msel { width:100%; padding:9px 12px; border-radius:8px; border:1px solid #2a2040; background:#0a0814; color:#d4cfe8; font-size:13px; font-family:Georgia,serif; outline:none; margin-bottom:10px; }
+.mta { width:100%; padding:9px 12px; border-radius:8px; border:1px solid #2a2040; background:#0a0814; color:#d4cfe8; font-size:13px; font-family:Georgia,serif; outline:none; margin-bottom:10px; resize:vertical; min-height:70px; }
+.mta:focus { border-color:#7c6fa0; }
+.mlbl { font-size:10px; color:#6b6080; letter-spacing:1px; text-transform:uppercase; margin-bottom:5px; display:block; }
+.mfoot { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+.btn-c { padding:8px 16px; border-radius:8px; border:1px solid #2a2040; background:#1a1a2e; color:#6b6080; cursor:pointer; font-size:13px; font-family:Georgia,serif; }
+.btn-ok { padding:8px 16px; border-radius:8px; border:1px solid #c4b8e044; background:#1e1630; color:#c4b8e0; cursor:pointer; font-size:13px; font-family:Georgia,serif; }
+.btn-del { padding:8px 16px; border-radius:8px; border:1px solid #ef444444; background:#2d0f0f; color:#ef4444; cursor:pointer; font-size:13px; font-family:Georgia,serif; }
+.mmsg { color:#a89bc8; font-size:14px; margin-bottom:20px; line-height:1.5; }
+
+.mplist { max-height:260px; overflow-y:auto; margin-bottom:10px; }
+.mpi { display:flex; align-items:flex-start; gap:10px; padding:9px 10px; border-radius:7px; border:1px solid #1e1c2e; margin-bottom:5px; cursor:pointer; }
+.mpi:hover { border-color:#7c6fa0; background:#13111f; }
+.mpi.sel { border-color:#7c6fa0; background:#1a1630; }
+.mpichk { width:16px; height:16px; min-width:16px; border-radius:4px; border:1.5px solid #2a2040; display:flex; align-items:center; justify-content:center; font-size:10px; color:#7c6fa0; margin-top:1px; }
+.mpi.sel .mpichk { border-color:#7c6fa0; background:#1e1630; }
+.mpisrc { font-size:9px; color:#6b6080; margin-bottom:2px; }
+.mpitxt { font-size:12px; color:#c0bcd4; line-height:1.3; }
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <div class="tab active" id="tab-macros" onclick="switchTab('macros')">📋 Objetivos Macros</div>
+  <div class="tab" id="tab-semana" onclick="switchTab('semana')">📅 Semana</div>
+</div>
+
+<div id="pane-macros">
+  <div class="header">
+    <div class="hlbl">Planejamento 2025</div>
+    <h1>Painel de Objetivos</h1>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div class="controls">
+    <div class="fg">
+      <span class="fl">Área:</span>
+      <button class="fb act-all" onclick="setArea('all')" id="area-all">Todas</button>
+      <button class="fb" onclick="setArea('pessoal')" id="area-pessoal">Pessoal</button>
+      <button class="fb" onclick="setArea('profissional')" id="area-profissional">Profissional</button>
+    </div>
+    <div class="fg">
+      <span class="fl">Status:</span>
+      <button class="fb act-all" onclick="setFil('all')" id="fil-all">Todos</button>
+      <button class="fb" onclick="setFil('done')" id="fil-done">Concluído</button>
+      <button class="fb" onclick="setFil('running')" id="fil-running">Em execução</button>
+      <button class="fb" onclick="setFil('late')" id="fil-late">Atrasado</button>
+    </div>
+    <div class="add-btns">
+      <button class="abp" onclick="openAddObj('pessoal')">+ Obj. Pessoal</button>
+      <button class="abpr" onclick="openAddObj('profissional')">+ Obj. Profissional</button>
+    </div>
+  </div>
+  <div class="list" id="list"></div>
+</div>
+
+<div id="pane-semana" style="display:none">
+  <div class="week-header">
+    <div class="week-nav">
+      <button class="week-nav-btn" onclick="navWeek(-1)">←</button>
+      <div class="week-nav-center">
+        <div class="week-title" id="wk-title">Semana</div>
+        <div class="week-range" id="wk-range"></div>
+        <div id="wk-badge"></div>
+      </div>
+      <button class="week-nav-btn" onclick="navWeek(1)">→</button>
+    </div>
+    <div class="week-stats" id="wk-stats"></div>
+    <div class="week-pbar"><div class="week-pfill" id="wk-pfill" style="width:0%"></div></div>
+  </div>
+  <div class="week-body" id="week-body"></div>
+</div>
+
+<div class="moverlay" id="modal" style="display:none">
+  <div class="mbox">
+    <div class="mhdr">
+      <span class="mtitle" id="mtitle"></span>
+      <button class="mclose" onclick="closeModal()">✕</button>
+    </div>
+    <div id="mbody"></div>
+  </div>
+</div>
+
+<script>
+// ---- DATE UTILS ----
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+
+function getMondayOf(d) {
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  const m = new Date(d); m.setDate(d.getDate() + diff); m.setHours(0,0,0,0);
+  return m;
+}
+function addDays(d, n) { const r = new Date(d); r.setDate(d.getDate()+n); return r; }
+function weekKey(monday) { return monday.toISOString().slice(0,10); }
+function fmt(d) { return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`; }
+function parseDate(s) {
+  if (!s) return null;
+  const p = s.split('/');
+  if (p.length < 2) return null;
+  const year = p.length >= 3 ? parseInt(p[2]) : 2025;
+  const d = new Date(year, parseInt(p[1])-1, parseInt(p[0]));
+  d.setHours(0,0,0,0); return d;
+}
+function getStatus(a) {
+  if (a.done) return 'done';
+  if (!a.date) return 'running';
+  const d = parseDate(a.date);
+  return d && d < TODAY ? 'late' : 'running';
+}
+function displayDate(s) {
+  if (!s) return '';
+  const p = s.split('/');
+  return p.length >= 3 ? `${p[0]}/${p[1]}/${p[2].slice(2)}` : s;
+}
+
+const SC = {
+  done:    { label:'Concluído',   color:'#22c55e', bg:'#052e16', icon:'✓' },
+  running: { label:'Em execução', color:'#f59e0b', bg:'#1c1208', icon:'◎' },
+  late:    { label:'Atrasado',    color:'#ef4444', bg:'#1f0707', icon:'!' },
+};
+const DAYS = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+const PRIOS = { alta:'Alta', media:'Média', baixa:'Baixa' };
+
+function uid() { return '_'+Math.random().toString(36).slice(2,10); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ---- INITIAL MACRO DATA ----
+const INIT_MACRO = {
+  pessoal: [
+    { id:'P1', label:'OBJ 1', title:'Pesar 56kg com saúde e disposição', actions:[
+      {id:'p1a1',text:'Consulta com nutricionista',date:'22/01/2025',done:true,note:''},
+      {id:'p1a2',text:'Matrícula na academia',date:'12/01/2025',done:true,note:''},
+      {id:'p1a3',text:'Ler livro sobre vida saudável',date:'10/01/2025',done:true,note:''},
+      {id:'p1a4',text:'Fazer 1 hora de exercício todos os dias',date:null,done:false,note:''},
+      {id:'p1a5',text:'Beber 2 litros de água todos os dias',date:null,done:false,note:''},
+    ]},
+    { id:'P2', label:'OBJ 2', title:'Pesar 80kg com saúde', actions:[
+      {id:'p2a1',text:'Consulta com nutricionista',date:'30/01/2025',done:true,note:''},
+      {id:'p2a2',text:'Fazer 1h de exercícios todos os dias',date:null,done:false,note:''},
+      {id:'p2a3',text:'Beber 2,5 litros de água todos os dias',date:null,done:false,note:''},
+      {id:'p2a4',text:'Alimentar corretamente',date:null,done:false,note:''},
+    ]},
+    { id:'P3', label:'OBJ 3', title:'Viagem lua de mel', actions:[
+      {id:'p3a1',text:'Definir data e local',date:'10/01/2025',done:true,note:''},
+      {id:'p3a2',text:'Comprar pacote',date:'30/01/2025',done:true,note:''},
+      {id:'p3a3',text:'Organizar como os meninos não ficam',date:'30/01/2025',done:true,note:''},
+    ]},
+    { id:'P4', label:'OBJ 4', title:'Realizar 160 dias de exercícios', actions:[
+      {id:'p4a1',text:'Fazer 1 hora de exercícios todos os dias',date:null,done:false,note:''},
+    ]},
+    { id:'P5', label:'OBJ 5', title:'Correr uma meia maratona 50k', actions:[
+      {id:'p5a1',text:'Realizar inscrição em uma prova',date:'05/01/2025',done:true,note:''},
+      {id:'p5a2',text:'Seguir treinamento proposto pelo agente L.A.',date:null,done:true,note:''},
+    ]},
+    { id:'P6', label:'OBJ 6', title:'Doar 60 coisas básicas', actions:[
+      {id:'p6a1',text:'Comprar 10 coisas por mês (1ª semana)',date:null,done:false,note:''},
+      {id:'p6a2',text:'Definir como e a quem será entregue',date:'10/01/2025',done:false,note:''},
+    ]},
+    { id:'P7', label:'OBJ 7', title:'Ler 6 livros por ano', actions:[
+      {id:'p7a1',text:'15 minutos diário de leitura',date:null,done:false,note:''},
+    ]},
+    { id:'P8', label:'OBJ 8', title:'Iniciar curso de inglês', actions:[
+      {id:'p8a1',text:'Definir metodologia — Online',date:'30/01/2025',done:true,note:''},
+      {id:'p8a2',text:'Definir instituição — Online Cambly',date:'30/01/2025',done:true,note:''},
+      {id:'p8a3',text:'Estipular orçamento R$200,00',date:'10/02/2025',done:false,note:''},
+      {id:'p8a4',text:'Travar agenda para as aulas',date:'10/02/2025',done:false,note:''},
+      {id:'p8a5',text:'Fazer matrícula',date:'28/02/2025',done:false,note:''},
+    ]},
+    { id:'P9', label:'OBJ 9', title:'Definir igreja e seu propósito', actions:[
+      {id:'p9a1',text:'Combinar comparecimento Anderson/orientação',date:'15/01/2025',done:true,note:''},
+      {id:'p9a2',text:'Definir igreja',date:'31/01/2025',done:true,note:''},
+    ]},
+    { id:'P10', label:'OBJ 10', title:'Iniciar terapia', actions:[
+      {id:'p10a1',text:'Procurar profissional',date:'01/03/2025',done:false,note:''},
+      {id:'p10a2',text:'Definir orçamento',date:'15/03/2025',done:false,note:''},
+      {id:'p10a3',text:'Realizar 1ª sessão',date:'20/03/2025',done:false,note:''},
+    ]},
+    { id:'P11', label:'OBJ 11', title:'Viagem de férias (6 dias)', actions:[
+      {id:'p11a1',text:'Definir local',date:'28/02/2025',done:false,note:''},
+      {id:'p11a2',text:'Definir data',date:'30/01/2025',done:true,note:''},
+      {id:'p11a3',text:'Comprar pacote',date:'15/03/2025',done:false,note:''},
+    ]},
+    { id:'P12', label:'OBJ 12', title:'Seguir na Igreja', actions:[
+      {id:'p12a1',text:'Definir igreja',date:'01/02/2025',done:true,note:''},
+      {id:'p12a2',text:'Participar ativamente dos cultos',date:'10/02/2025',done:true,note:''},
+      {id:'p12a3',text:'Fazer parte de um grupo (Homens)',date:'30/04/2025',done:false,note:''},
+      {id:'p12a4',text:'Começar a servir',date:'30/06/2025',done:false,note:''},
+    ]},
+  ],
+  profissional: [
+    { id:'PR1', label:'OBJ 1', title:'Fazer A.C.B faturar R$2.900.000,00 — 1º semestre', actions:[
+      {id:'pr1a1',text:'Criar trilha de treinamento e desenvolvimento vendedores',date:null,done:false,note:''},
+      {id:'pr1a2',text:'Criar novo canal de vendas (interno) 20%',date:null,done:false,note:''},
+      {id:'pr1a3',text:'Criar novo produto para aumentar ticket e cross-sell',date:null,done:false,note:''},
+      {id:'pr1a4',text:'Formar equipe em novos locais (J.P, Suazeno)',date:null,done:false,note:''},
+      {id:'pr1a5',text:'Desenvolver ações de retenção',date:null,done:false,note:''},
+    ]},
+    { id:'PR2', label:'OBJ 2', title:'Sales faturar 100k', actions:[
+      {id:'pr2a1',text:'Montar P.E.',date:'14/03/2025',done:false,note:''},
+      {id:'pr2a2',text:'Criar canal de vendas',date:null,done:false,note:''},
+      {id:'pr2a3',text:'Contratar treinamentos para a equipe',date:null,done:false,note:''},
+      {id:'pr2a4',text:'Realizar gestão semanal',date:'21/03/2025',done:false,note:''},
+    ]},
+    { id:'PR3', label:'OBJ 3', title:'Iniciar mentoria', actions:[
+      {id:'pr3a1',text:'Definir modelo de negócio (produto, entregáveis)',date:'06/03/2025',done:false,note:''},
+      {id:'pr3a2',text:'Definir nome',date:null,done:true,note:''},
+      {id:'pr3a3',text:'Criar branding',date:'28/03/2025',done:false,note:''},
+      {id:'pr3a4',text:'Preparar material de divulgação',date:'31/03/2025',done:false,note:''},
+    ]},
+    { id:'PR4', label:'OBJ 4', title:'Escrever e-book', actions:[
+      {id:'pr4a1',text:'Definir tema',date:'28/02/2025',done:false,note:''},
+      {id:'pr4a2',text:'Conhecer como funciona um e-book',date:null,done:true,note:''},
+      {id:'pr4a3',text:'Escrever e-book',date:'07/03/2025',done:false,note:''},
+      {id:'pr4a4',text:'Diagramar e-book',date:'14/03/2025',done:false,note:''},
+      {id:'pr4a5',text:'Lançamento do e-book',date:'21/03/2025',done:false,note:''},
+    ]},
+    { id:'PR5', label:'OBJ 5', title:'Escrever 1º livro', actions:[
+      {id:'pr5a1',text:'Definir propósito do livro',date:'15/03/2025',done:false,note:''},
+      {id:'pr5a2',text:'Escolher tipo de livro para o meu momento',date:'08/03/2025',done:false,note:''},
+      {id:'pr5a3',text:'Criar esqueleto do livro',date:'10/04/2025',done:false,note:''},
+      {id:'pr5a4',text:'Definir rotina para escrever',date:null,done:false,note:''},
+      {id:'pr5a5',text:'Definir título do livro',date:null,done:false,note:''},
+      {id:'pr5a6',text:'Capa e diagramação',date:null,done:false,note:''},
+      {id:'pr5a7',text:'Revisão e publicação',date:null,done:false,note:''},
+    ]},
+    { id:'PR6', label:'OBJ 6', title:'Ter realizado 4 palestras', actions:[
+      {id:'pr6a1',text:'Definir tema das palestras e treinamento',date:'01/03/2025',done:false,note:''},
+      {id:'pr6a2',text:'Montar press kit',date:'30/03/2025',done:false,note:''},
+      {id:'pr6a3',text:'Montar site',date:'30/03/2025',done:false,note:''},
+      {id:'pr6a4',text:'Oferecer palestras',date:'01/04/2025',done:false,note:''},
+    ]},
+    { id:'PR7', label:'OBJ 7', title:'Vender 10 franquias A.C.B', actions:[
+      {id:'pr7a1',text:'Organizar processo comercial',date:'06/03/2025',done:false,note:''},
+      {id:'pr7a2',text:'Estruturar apresentação e DRE',date:'15/03/2025',done:false,note:''},
+      {id:'pr7a3',text:'Tráfego pago',date:null,done:false,note:''},
+      {id:'pr7a4',text:'Definir estratégia comercial',date:'05/03/2025',done:false,note:''},
+    ]},
+    { id:'PR8', label:'OBJ 8', title:'Postar 12 vídeos no YouTube', actions:[
+      {id:'pr8a1',text:'Definir conteúdo e editorial',date:null,done:true,note:''},
+      {id:'pr8a2',text:'Gravar 2 vídeos na primeira semana do mês',date:null,done:false,note:''},
+      {id:'pr8a3',text:'Definir identidade visual da marca J.F',date:null,done:true,note:''},
+      {id:'pr8a4',text:'Definir local e equipamentos',date:null,done:true,note:''},
+      {id:'pr8a5',text:'Providenciar equipamentos',date:null,done:true,note:''},
+    ]},
+    { id:'PR9', label:'OBJ 9', title:'36 reels no Instagram e TikTok', actions:[
+      {id:'pr9a1',text:'Definir conteúdo e editorial',date:null,done:true,note:''},
+      {id:'pr9a2',text:'Gravar os vídeos na segunda',date:null,done:false,note:''},
+      {id:'pr9a3',text:'Postar os vídeos',date:null,done:false,note:''},
+    ]},
+    { id:'PR10', label:'OBJ 10', title:'620 associados e 600 alunos no comercial interno', actions:[
+      {id:'pr10a1',text:'Estruturar comercial (processo)',date:null,done:true,note:''},
+      {id:'pr10a2',text:'Desenvolver novos canais',date:null,done:false,note:''},
+      {id:'pr10a3',text:'Processo de acompanhamento do associado nível 2',date:'02/03/2025',done:false,note:''},
+      {id:'pr10a4',text:'Estruturar plano de campanha do potencial',date:'06/03/2025',done:false,note:''},
+      {id:'pr10a5',text:'Definir rotinas comerciais',date:null,done:true,note:''},
+      {id:'pr10a6',text:'Criar processo de onboarding',date:null,done:false,note:''},
+      {id:'pr10a7',text:'Intensificar tráfego pago',date:'03/03/2025',done:false,note:''},
+      {id:'pr10a8',text:'Criar dashboard comercial interno',date:'15/03/2025',done:false,note:''},
+    ]},
+  ]
+};
+
+// ---- STATE ----
+let macroData, allWeeks;
+let curArea='all', curFil='all', expanded={};
+let curTab='macros';
+let dayExpanded={0:true,1:true,2:true,3:true,4:true,5:true,6:true};
+let viewMonday = getMondayOf(TODAY); // which week we're viewing
+
+function currentWeekKey() { return weekKey(getMondayOf(TODAY)); }
+function viewWeekKey()    { return weekKey(viewMonday); }
+
+function getWeek(key) {
+  if (!allWeeks[key]) allWeeks[key] = { days: [[],[],[],[],[],[],[]] };
+  return allWeeks[key];
+}
+
+function save() {
+  try {
+    localStorage.setItem('macro2025v4', JSON.stringify(macroData));
+    localStorage.setItem('weeks2025v4', JSON.stringify(allWeeks));
+  } catch(e){}
+}
+
+function load() {
+  try {
+    const m = localStorage.getItem('macro2025v4');
+    macroData = m ? JSON.parse(m) : JSON.parse(JSON.stringify(INIT_MACRO));
+  } catch(e) { macroData = JSON.parse(JSON.stringify(INIT_MACRO)); }
+  try {
+    const w = localStorage.getItem('weeks2025v4');
+    allWeeks = w ? JSON.parse(w) : {};
+  } catch(e) { allWeeks = {}; }
+}
+
+// ---- NAVIGATION ----
+function navWeek(dir) {
+  viewMonday = addDays(viewMonday, dir * 7);
+  renderWeek();
+}
+
+function weekLabel() {
+  const vk = viewWeekKey();
+  const ck = currentWeekKey();
+  const nextMonday = addDays(getMondayOf(TODAY), 7);
+  const nk = weekKey(nextMonday);
+  if (vk === ck) return { label:'Semana Atual', cls:'badge-current' };
+  if (vk === nk) return { label:'Próxima Semana', cls:'badge-future' };
+  if (vk > ck)   return { label:'Semana Futura', cls:'badge-future' };
+  return { label:'Semana Passada', cls:'badge-past' };
+}
+
+// ---- TRANSFER PENDING ----
+function transferPending() {
+  const vk = viewWeekKey();
+  const week = getWeek(vk);
+  const nextMonday = addDays(viewMonday, 7);
+  const nk = weekKey(nextMonday);
+  const nextWeek = getWeek(nk);
+
+  let count = 0;
+  week.days.forEach((dayActions, di) => {
+    const pending = dayActions.filter(a => !a.done);
+    pending.forEach(a => {
+      nextWeek.days[di].push({ ...a, id: uid(), done: false });
+      count++;
+    });
+    week.days[di] = dayActions.filter(a => a.done);
+  });
+
+  allWeeks[vk] = week;
+  allWeeks[nk] = nextWeek;
+  save();
+
+  if (count > 0) {
+    const nfmt = `${fmt(nextMonday)} — ${fmt(addDays(nextMonday,6))}`;
+    alert(`${count} ação(ões) pendente(s) transferida(s) para a semana de ${nfmt}.`);
+    renderWeek();
+  } else {
+    alert('Nenhuma ação pendente para transferir.');
+  }
+}
+
+// ---- TAB ----
+function switchTab(t) {
+  curTab = t;
+  document.getElementById('pane-macros').style.display = t==='macros'?'block':'none';
+  document.getElementById('pane-semana').style.display = t==='semana'?'block':'none';
+  document.getElementById('tab-macros').className = 'tab'+(t==='macros'?' active':'');
+  document.getElementById('tab-semana').className  = 'tab'+(t==='semana'?' active':'');
+  if (t==='semana') renderWeek();
+}
+
+// ---- MACRO RENDER ----
+function objStatus(obj) {
+  if (!obj.actions.length) return 'running';
+  const ss = obj.actions.map(a=>getStatus(a));
+  if (ss.every(s=>s==='done')) return 'done';
+  if (ss.some(s=>s==='late')) return 'late';
+  return 'running';
+}
+function computeStats() {
+  let t=0,d=0,l=0,r=0;
+  ['pessoal','profissional'].forEach(ak=>macroData[ak].forEach(o=>o.actions.forEach(a=>{
+    t++; const s=getStatus(a);
+    if(s==='done')d++; else if(s==='late')l++; else r++;
+  })));
+  return {t,d,l,r};
+}
+function render() {
+  save(); renderStats(); renderList();
+  if(curTab==='semana') renderWeek();
+}
+function renderStats() {
+  const {t,d,l,r}=computeStats(); const pct=t>0?Math.round(d/t*100):0;
+  document.getElementById('stats').innerHTML=[
+    [t,'Total','#a89bc8'],[d,'Concluídas','#22c55e'],[r,'Em execução','#f59e0b'],
+    [l,'Atrasadas','#ef4444'],[pct+'%','Progresso','#a89bc8'],
+  ].map(([v,lb,c])=>`<div class="sc"><div class="sv" style="color:${c}">${v}</div><div class="sl">${lb}</div></div>`).join('');
+}
+function renderList() {
+  const el=document.getElementById('list');
+  let objs=[];
+  if(curArea!=='profissional') macroData.pessoal.forEach(o=>objs.push({...o,ak:'pessoal'}));
+  if(curArea!=='pessoal') macroData.profissional.forEach(o=>objs.push({...o,ak:'profissional'}));
+  if(curFil!=='all') objs=objs.filter(o=>objStatus(o)===curFil);
+  if(!objs.length){el.innerHTML='<div class="empty">Nenhum objetivo encontrado.</div>';return;}
+  el.innerHTML=objs.map(obj=>{
+    const os=objStatus(obj),sc=SC[os];
+    const total=obj.actions.length,doneC=obj.actions.filter(a=>getStatus(a)==='done').length;
+    const pct=total>0?Math.round(doneC/total*100):0;
+    const isOpen=!!expanded[obj.id],ak=obj.ak;
+    let actsHtml='';
+    if(isOpen){
+      const rows=obj.actions.map(a=>{
+        const as=getStatus(a),asc=SC[as];
+        return `<div class="arow ${as==='late'?'late-bg':''}">
+          <div class="chk ${as==='done'?'chkd':''}" onclick="toggleDone('${ak}','${obj.id}','${a.id}')">${as==='done'?'✓':''}</div>
+          <div class="ainfo">
+            <div class="atxt ${as==='done'?'done':''}">${esc(a.text)}</div>
+            ${a.note?`<div class="anote">📝 ${esc(a.note)}</div>`:''}
+            <div class="ameta">
+              ${a.date?`<span class="dbadge" style="color:${asc.color};background:${asc.bg};border:1px solid ${asc.color}33">${displayDate(a.date)}</span>`:''}
+              <span class="sbadge" style="color:${asc.color}">${asc.icon} ${asc.label}</span>
+            </div>
+          </div>
+          <div class="abtns">
+            <button class="icon-btn" onclick="openEditAction('${ak}','${obj.id}','${a.id}')">✏️</button>
+            <button class="icon-btn" onclick="confirmDelAction('${ak}','${obj.id}','${a.id}','${esc(a.text)}')">✕</button>
+          </div>
+        </div>`;
+      }).join('');
+      actsHtml=`<div class="acts-wrap">${rows}<div class="add-arow"><button class="add-abtn" onclick="openAddAction('${ak}','${obj.id}')">+ Adicionar ação</button></div></div>`;
+    }
+    return `<div class="obj-card ${isOpen?'open':''}" id="card-${obj.id}">
+      <div class="obj-hdr" onclick="toggleExp('${obj.id}')">
+        <div class="sdot" style="background:${sc.color};box-shadow:0 0 6px ${sc.color}66"></div>
+        <span class="ab ${ak==='pessoal'?'ab-p':'ab-pr'}">${ak==='pessoal'?'Pessoal':'Profissional'}</span>
+        <span class="onum">${esc(obj.label)}</span>
+        <span class="otitle">${esc(obj.title)}</span>
+        <div class="oright">
+          <div class="pbar"><div class="pfill" style="width:${pct}%;background:${sc.color}"></div></div>
+          <span class="ppct" style="color:${sc.color}">${pct}%</span>
+          <button class="icon-btn" onclick="event.stopPropagation();openEditObj('${ak}','${obj.id}')">✏️</button>
+          <button class="icon-btn" onclick="event.stopPropagation();confirmDelObj('${ak}','${obj.id}','${esc(obj.title)}')">🗑</button>
+          <span class="chevron">${isOpen?'▲':'▼'}</span>
+        </div>
+      </div>${actsHtml}</div>`;
+  }).join('');
+}
+function toggleExp(id){expanded[id]=!expanded[id];render();}
+function setArea(v){curArea=v;document.querySelectorAll('[id^="area-"]').forEach(b=>b.className='fb');document.getElementById('area-'+v).className='fb act-'+(v==='all'?'all':v);render();}
+function setFil(v){curFil=v;document.querySelectorAll('[id^="fil-"]').forEach(b=>b.className='fb');document.getElementById('fil-'+v).className='fb act-'+v;render();}
+function toggleDone(ak,objId,actionId){const a=macroData[ak].find(o=>o.id===objId)?.actions.find(a=>a.id===actionId);if(a)a.done=!a.done;render();}
+
+// ---- WEEKLY RENDER ----
+function renderWeek() {
+  const vk = viewWeekKey();
+  const ck = currentWeekKey();
+  const week = getWeek(vk);
+  const sunday = addDays(viewMonday, 6);
+
+  document.getElementById('wk-title').textContent = 'Semana';
+  document.getElementById('wk-range').textContent = `${fmt(viewMonday)} — ${fmt(sunday)}`;
+  const {label,cls} = weekLabel();
+  document.getElementById('wk-badge').innerHTML = `<span class="week-badge ${cls}">${label}</span>`;
+
+  let total=0,done=0;
+  week.days.forEach(d=>d.forEach(a=>{total++;if(a.done)done++;}));
+  const pct=total>0?Math.round(done/total*100):0;
+  document.getElementById('wk-pfill').style.width=pct+'%';
+  document.getElementById('wk-stats').innerHTML=[
+    [total,'Total','#a89bc8'],[done,'Concluídas','#22c55e'],[total-done,'Pendentes','#f59e0b']
+  ].map(([v,lb,c])=>`<div class="sc"><div class="sv" style="color:${c}">${v}</div><div class="sl">${lb}</div></div>`).join('');
+
+  // pending count for transfer bar
+  const pendingCount = week.days.reduce((s,d)=>s+d.filter(a=>!a.done).length,0);
+
+  const todayIdx = (() => { const d=TODAY.getDay(); return d===0?6:d-1; })();
+
+  const daysHtml = DAYS.map((dayName,di)=>{
+    const dayDate = addDays(viewMonday, di);
+    const isToday = vk===ck && di===todayIdx;
+    const actions = week.days[di]||[];
+    const isOpen = dayExpanded[di]!==false;
+    const doneC = actions.filter(a=>a.done).length;
+
+    const actRows = isOpen ? actions.map(a=>{
+      const pc = a.priority==='alta'?'pri-alta':a.priority==='media'?'pri-media':'pri-baixa';
+      return `<div class="wact ${a.done?'done-card':''}">
+        <div class="wchk ${a.done?'chkd':''}" onclick="toggleWeekDone('${vk}',${di},'${a.id}')">${a.done?'✓':''}</div>
+        <div class="winfo">
+          <div class="wtxt ${a.done?'done':''}">${esc(a.text)}</div>
+          ${a.note?`<div class="wnote">📝 ${esc(a.note)}</div>`:''}
+          <div class="wmeta">
+            <span class="wpri ${pc}">${PRIOS[a.priority]||a.priority}</span>
+            ${a.source?`<span class="wsrc">↗ ${esc(a.source)}</span>`:''}
+          </div>
+        </div>
+        <div class="wabtns">
+          <button class="icon-btn" onclick="openEditWeekAction('${vk}',${di},'${a.id}')">✏️</button>
+          <button class="icon-btn" onclick="confirmDelWeekAction('${vk}',${di},'${a.id}','${esc(a.text)}')">✕</button>
+        </div>
+      </div>`;
+    }).join('') : '';
+
+    return `<div class="week-day">
+      <div class="wday-hdr" onclick="toggleDay(${di})">
+        <span class="wday-name" style="color:${isToday?'#c4b8e0':'#7c6fa0'}">${dayName}</span>
+        <span class="wday-date">${fmt(dayDate)}${isToday?' ◀':''}</span>
+        <span class="wday-count">${doneC}/${actions.length}</span>
+        <div class="wday-line"></div>
+        <span class="wday-chev">${isOpen?'▲':'▼'}</span>
+      </div>
+      ${isOpen?`<div>${actRows}
+        <div class="wadd-row">
+          <button class="wadd-btn" onclick="openAddWeekAction('${vk}',${di})">+ Ação livre</button>
+          <button class="wadd-btn wadd-macro" onclick="openPickMacro('${vk}',${di})">+ Do macro</button>
+        </div>
+      </div>`:''}
+    </div>`;
+  }).join('');
+
+  const transferHtml = pendingCount > 0 ? `
+    <div class="transfer-bar">
+      <div class="transfer-info">📤 ${pendingCount} ação(ões) pendente(s) nesta semana</div>
+      <button class="transfer-btn" onclick="transferPending()">Enviar pendentes → próxima semana</button>
+    </div>` : '';
+
+  document.getElementById('week-body').innerHTML = transferHtml + daysHtml;
+}
+
+function toggleDay(di){dayExpanded[di]=!dayExpanded[di];renderWeek();}
+function toggleWeekDone(wk,di,id){
+  const a=(getWeek(wk).days[di]||[]).find(a=>a.id===id);
+  if(a)a.done=!a.done;
+  save(); renderWeek();
+}
+
+// ---- MODAL ----
+function openModal(title,html){document.getElementById('mtitle').textContent=title;document.getElementById('mbody').innerHTML=html;document.getElementById('modal').style.display='flex';}
+function closeModal(){document.getElementById('modal').style.display='none';}
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+// ---- MACRO CRUD ----
+function openAddObj(ak){
+  openModal(`Novo objetivo ${ak==='pessoal'?'pessoal':'profissional'}`,`
+    <label class="mlbl">Título</label><input class="minput" id="i-t" placeholder="Ex: Aprender violão" />
+    <div class="mfoot"><button class="btn-c" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="doAddObj('${ak}')">Adicionar</button></div>`);
+  setTimeout(()=>document.getElementById('i-t')?.focus(),100);
+}
+function doAddObj(ak){
+  const t=(document.getElementById('i-t')||{}).value||''; if(!t.trim())return;
+  const obj={id:uid(),label:`OBJ ${macroData[ak].length+1}`,title:t.trim(),actions:[]};
+  macroData[ak].push(obj); expanded[obj.id]=true; closeModal(); render();
+}
+function openEditObj(ak,id){
+  const obj=macroData[ak].find(o=>o.id===id); if(!obj)return;
+  openModal('Editar objetivo',`
+    <label class="mlbl">Título</label><input class="minput" id="i-t" value="${esc(obj.title)}" />
+    <div class="mfoot"><button class="btn-c" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="doEditObj('${ak}','${id}')">Salvar</button></div>`);
+  setTimeout(()=>document.getElementById('i-t')?.focus(),100);
+}
+function doEditObj(ak,id){
+  const t=(document.getElementById('i-t')||{}).value||''; if(!t.trim())return;
+  const obj=macroData[ak].find(o=>o.id===id); if(obj)obj.title=t.trim(); closeModal(); render();
+}
+function confirmDelObj(ak,id,title){
+  openModal('Confirmar exclusão',`<p class="mmsg">Excluir "<strong>${esc(title)}</strong>" e todas as suas ações?</p>
+    <div class="mfoot"><button class="btn-c" onclick="closeModal()">Cancelar</button><button class="btn-del" onclick="doDelObj('${ak}','${id}')">Excluir</button></div>`);
+}
+function doDelObj(ak,id){macroData[ak]=macroData[ak].filter(o=>o.id!==id);delete expanded[id];closeModal();render();}
+
+function aForm(a){return `
+  <label class="mlbl">Descrição</label><input class="minput" id="i-tx" value="${esc(a?.text||'')}" placeholder="Ex: Reunião semanal" />
+  <label class="mlbl">Prazo (dd/mm/aaaa) — opcional</label><input class="minput" id="i-dt" value="${esc(a?.date||'')}" placeholder="30/06/2025" />
+  <label class="mlbl">Observação — opcional</label><textarea class="mta" id="i-nt" placeholder="Detalhes...">${esc(a?.note||'')}</textarea>`;}
+
+function openAddAction(ak,objId){
+  openModal('Nova ação',aForm(null)+`<div class="mfoot"><button class="btn-c" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="doAddAction('${ak}','${objId}')">Adicionar</button></div>`);
+  setTimeout(()=>document.getElementById('i-tx')?.focus(),100);
+}
+function doAddAction(ak,objId){
+  const tx=(document.getElementById('i-tx')||{}).value||''; if(!tx.trim())return;
+  const obj=macroData[ak].find(o=>o.id===objId); if(!obj)return;
+  obj.actions.push({id:uid(),text:tx.trim(),date:(document.getElementById('i-dt')||{}).value?.trim()||null,done:false,note:(document.getElementById('i-nt')||{}).value?.trim()||''});
+  closeModal(); render();
+}
+function openEditAction(ak,objId,aId){
+  const a=macroData[ak].find(o=>o.id===objId)?.actions.find(a=>a.id===aId); if(!a)return;
+  openModal('Editar ação',aForm(a)+`<div class="mfoot"><button class="btn-c" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="doEditAction('${ak}','${objId}','${aId}')">Salvar</button></div>`);
+  setTimeout(()=>document.getElementById('i-tx')?.focus(),100);
+}
+function doEditAction(ak,objId,aId){
+  const a=macroData[ak].find(o=>o.id===objId)?.actions.find(a=>a.id===aId); if(!a)return;
+  a.text=(document.getElementById('i-tx')||{}).value?.trim()||a.text;
+  a.date=(document.getElementById('i-dt')||{}).value?.trim()||null;
+  a.note=(document.getElementById('i-nt')||{}).value?.trim()||'';
+  closeModal(); render();
+}
+function confirmDelAction(ak,objId,aId,text){
+  openModal('Confirmar exclusão',`<p class="mmsg">Excluir "<strong>${esc(text)}</strong>"?</p>
+    <div class="mfoot"><button class="btn-c" onclick="closeModal()">Cancelar</button><button class="btn-del" onclick="doDelAction('${ak}','${objId}','${aId}')">Excluir</button></div>`);
+}
+function doDelAction(ak,objId,aId){
+  const obj=macroData[ak].find(o=>o.id===objId); if(obj)obj.actions=obj.actions.filter(a=>a.id!==aId); closeModal(); render();
+}
+
+// ---- WEEKLY CRUD ----
+function wForm(a){
+  const ps=['alta','media','baixa'].map(p=>`<option value="${p}" ${a&&a.priority===p?'selected':''}>${PRIOS[p]}</option>`).join('');
+  return `<label class="mlbl">Descrição</label><input class="minput" id="wi-tx" value="${esc(a?.text||'')}" placeholder="Ex: Reunião com equipe" />
+    <label class="mlbl">Prioridade</label><select class="msel" id="wi-pr">${ps}</select>
+    <label class="mlbl">Observação — opcional</label><textarea class="mta" id="wi-nt" placeholder="Detalhes...">${esc(a?.note||'')}</textarea>`;
+}
+function openAddWeekAction(wk,di){
+  openModal(`Nova ação — ${DAYS[di]}`,wForm({priority:'media'})+
+    `<div class="mfoot"><button class="btn-c" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="doAddWeekAction('${wk}',${di})">Adicionar</button></div>`);
+  setTimeout(()=>document.getElementById('wi-tx')?.focus(),100);
+}
+function doAddWeekAction(wk,di){
+  const tx=(document.getElementById('wi-tx')||{}).value||''; if(!tx.trim())return;
+  const week=getWeek(wk);
+  week.days[di].push({id:uid(),text:tx.trim(),priority:(document.getElementById('wi-pr')||{}).value||'media',note:(document.getElementById('wi-nt')||{}).value?.trim()||'',done:false,source:null});
+  closeModal(); save(); renderWeek();
+}
+function openEditWeekAction(wk,di,id){
+  const a=(getWeek(wk).days[di]||[]).find(a=>a.id===id); if(!a)return;
+  openModal('Editar ação',wForm(a)+
+    `<div class="mfoot"><button class="btn-c" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="doEditWeekAction('${wk}',${di},'${id}')">Salvar</button></div>`);
+  setTimeout(()=>document.getElementById('wi-tx')?.focus(),100);
+}
+function doEditWeekAction(wk,di,id){
+  const a=(getWeek(wk).days[di]||[]).find(a=>a.id===id); if(!a)return;
+  a.text=(document.getElementById('wi-tx')||{}).value?.trim()||a.text;
+  a.priority=(document.getElementById('wi-pr')||{}).value||'media';
+  a.note=(document.getElementById('wi-nt')||{}).value?.trim()||'';
+  closeModal(); save(); renderWeek();
+}
+function confirmDelWeekAction(wk,di,id,text){
+  openModal('Confirmar exclusão',`<p class="mmsg">Excluir "<strong>${esc(text)}</strong>"?</p>
+    <div class="mfoot"><button class="btn-c" onclick="closeModal()">Cancelar</button><button class="btn-del" onclick="doDelWeekAction('${wk}',${di},'${id}')">Excluir</button></div>`);
+}
+function doDelWeekAction(wk,di,id){
+  const week=getWeek(wk); week.days[di]=(week.days[di]||[]).filter(a=>a.id!==id); closeModal(); save(); renderWeek();
+}
+
+// ---- PICK FROM MACRO ----
+let pickWk, pickDi, selIds=new Set(), pickItems=[];
+
+function openPickMacro(wk,di){
+  pickWk=wk; pickDi=di; selIds=new Set(); pickItems=[];
+  let items=[];
+  ['pessoal','profissional'].forEach(ak=>{
+    macroData[ak].forEach(obj=>{
+      obj.actions.forEach(a=>{
+        if(!a.done) items.push({id:a.id,text:a.text,source:`${obj.label} — ${obj.title}`});
+      });
+    });
+  });
+  pickItems=items;
+  const listHtml=items.length===0
+    ?'<p style="color:#6b6080;font-size:13px">Nenhuma ação macro disponível.</p>'
+    :items.map(it=>`
+      <div class="mpi" id="mpi-${it.id}" onclick="togglePick('${it.id}')">
+        <div class="mpichk" id="mpichk-${it.id}"></div>
+        <div><div class="mpisrc">${esc(it.source)}</div><div class="mpitxt">${esc(it.text)}</div></div>
+      </div>`).join('');
+  const ps=['alta','media','baixa'].map(p=>`<option value="${p}" ${p==='media'?'selected':''}>${PRIOS[p]}</option>`).join('');
+  openModal(`Do macro — ${DAYS[di]}`,`
+    <div class="mplist">${listHtml}</div>
+    <label class="mlbl">Prioridade para as selecionadas</label>
+    <select class="msel" id="pick-pr">${ps}</select>
+    <div class="mfoot"><button class="btn-c" onclick="closeModal()">Cancelar</button><button class="btn-ok" onclick="doPickMacro()">Adicionar selecionadas</button></div>`);
+}
+function togglePick(id){
+  const el=document.getElementById('mpi-'+id), chk=document.getElementById('mpichk-'+id);
+  if(selIds.has(id)){selIds.delete(id);el.classList.remove('sel');chk.textContent='';}
+  else{selIds.add(id);el.classList.add('sel');chk.textContent='✓';}
+}
+function doPickMacro(){
+  const pri=(document.getElementById('pick-pr')||{}).value||'media';
+  const week=getWeek(pickWk);
+  selIds.forEach(id=>{
+    const it=pickItems.find(i=>i.id===id); if(!it)return;
+    week.days[pickDi].push({id:uid(),text:it.text,priority:pri,note:'',done:false,source:it.source});
+  });
+  closeModal(); save(); renderWeek();
+}
+
+// ---- INIT ----
+load();
+render();
+</script>
+</body>
+</html>
